@@ -82,7 +82,6 @@ jobs:
           ./venv/bin/pip install -r requirements.txt --no-cache-dir --verbose 
           ls -l venv/bin  
           ./venv/bin/pip show pytest  
-          find ./venv/bin -type f -exec sed -i 's|#!/.*python.*|#!/usr/bin/env python3|' {} \;  
           cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
       - name: Download build artifacts
         uses: actions/download-artifact@v4
