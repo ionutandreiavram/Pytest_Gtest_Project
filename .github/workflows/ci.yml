@@ -12,6 +12,11 @@ jobs:
     container: gcc:latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
+          cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
       - name: Build
         run: |
           mkdir build && cd build
@@ -30,6 +35,11 @@ jobs:
     needs: build_firmware
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
+          cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -52,6 +62,16 @@ jobs:
     needs: build_firmware
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
+          cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
+          python3 -m venv /app/venv
+          /app/venv/bin/python -m ensurepip --upgrade
+          /app/venv/bin/python -m pip install --upgrade pip
+          /app/venv/bin/pip install -r requirements.txt
+          find /app/venv/bin -type f -exec sed -i 's|#!/.*python.*|#!/app/venv/bin/python|' {} \;
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -60,8 +80,6 @@ jobs:
       - name: Run integration tests
         run: |
           ls build/libcalculator.so
-          /app/venv/bin/pip install -r requirements.txt
-          /app/venv/bin/pytest --version
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/build
           /app/venv/bin/pytest tests/integration/ --junitxml=test_results.xml
       - name: Store test results
