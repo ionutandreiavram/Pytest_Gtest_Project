@@ -9,7 +9,7 @@ on:
 jobs:
   build_firmware:
     runs-on: ubuntu-latest
-    container: arm64v8/gcc:latest
+    container: gcc:latest
     steps:
       - uses: actions/checkout@v4
       - name: Build
@@ -26,7 +26,7 @@ jobs:
 
   unit_tests:
     runs-on: ubuntu-latest
-    container: arm64v8/gcc:latest
+    container: gcc:latest
     needs: build_firmware
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
 
   integration_tests:
     runs-on: ubuntu-latest
-    container: arm64v8/gcc:latest
+    container: gcc:latest
     needs: build_firmware
     steps:
       - uses: actions/checkout@v4
