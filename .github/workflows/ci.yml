@@ -65,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify files
-        run: ls -l /app
+        run: ls -l
       - name: Install dependencies
         run: |
           apt-get update
@@ -74,8 +74,8 @@ jobs:
           python3 -m venv venv
           ./venv/bin/python -m ensurepip --upgrade
           ./venv/bin/python -m pip install --upgrade pip
-          ls -l /app  # Verifică dacă requirements.txt există
-          ./venv/bin/pip install -r /app/requirements.txt
+          ls -l  # Verifică dacă requirements.txt există
+          ./venv/bin/pip install -r requirements.txt
           find ./venv/bin -type f -exec sed -i 's|#!/.*python.*|#!/github/workspace/venv/bin/python|' {} \;
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -87,11 +87,11 @@ jobs:
       - name: Run integration tests
         run: |
           ls build/libcalculator.so
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/build
-          ./venv/bin/pytest /app/tests/integration/ --junitxml=/app/test_results.xml
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/github/workspace/build
+          ./venv/bin/pytest tests/integration/ --junitxml=test_results.xml
       - name: Store test results
         uses: actions/upload-artifact@v4
         with:
           name: integration-test-results
-          path: /app/test_results.xml
+          path: test_results.xml
           retention-days: 7
