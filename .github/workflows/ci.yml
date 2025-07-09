@@ -29,7 +29,7 @@ jobs:
           path: build/
           retention-days: 7
 
-unit_tests:
+  unit_tests:
     runs-on: ubuntu-latest
     container: gcc:latest
     needs: build_firmware
@@ -58,18 +58,17 @@ unit_tests:
           path: test_results.xml
           retention-days: 7
 
-
-integration_tests:
+  integration_tests:
     runs-on: ubuntu-latest
     container: gcc:latest
     needs: build_firmware
     steps:
       - uses: actions/checkout@v4
         with:
-          path: /app
+          path: /app  # Asigură checkout în /app
       - name: Verify files
         run: ls -l /app
-- name: Install dependencies
+      - name: Install dependencies
         run: |
           apt-get update
           apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
@@ -77,29 +76,24 @@ integration_tests:
           python3 -m venv /app/venv
           /app/venv/bin/python -m ensurepip --upgrade
           /app/venv/bin/python -m pip install --upgrade pip
-          ls -l /app  # Verifica daca requirements.txt exista
+          ls -l /app  # Verifică dacă requirements.txt există
           /app/venv/bin/pip install -r /app/requirements.txt
           find /app/venv/bin -type f -exec sed -i 's|#!/.*python.*|#!/app/venv/bin/python|' {} \;
-- name: Download build artifacts
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: build/
-- name: Set execute permissions
+      - name: Set execute permissions
         run: chmod +x build/libcalculator.so
       - name: Run integration tests
         run: |
           ls build/libcalculator.so
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/build
           /app/venv/bin/pytest /app/tests/integration/ --junitxml=/app/test_results.xml
-- name: Store test results
+      - name: Store test results
         uses: actions/upload-artifact@v4
         with:
           name: integration-test-results
           path: /app/test_results.xml
           retention-days: 7
-
-
-
-
-
