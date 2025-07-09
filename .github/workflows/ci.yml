@@ -1,0 +1,72 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_firmware:
+    runs-on: ubuntu-latest
+    container: arm64v8/gcc:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          mkdir build && cd build
+          cmake ..
+          make
+      - name: Store artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+          retention-days: 7
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    container: arm64v8/gcc:latest
+    needs: build_firmware
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+      - name: Run unit tests
+        run: |
+          cd build
+          ./test_calculator
+      - name: Store test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: test_results.xml
+          retention-days: 7
+
+  integration_tests:
+    runs-on: ubuntu-latest
+    container: arm64v8/gcc:latest
+    needs: build_firmware
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+      - name: Run integration tests
+        run: |
+          ls build/libcalculator.so
+          /app/venv/bin/pip install -r requirements.txt
+          /app/venv/bin/pytest --version
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/build
+          /app/venv/bin/pytest tests/integration/ --junitxml=test_results.xml
+      - name: Store test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: test_results.xml
+          retention-days: 7
