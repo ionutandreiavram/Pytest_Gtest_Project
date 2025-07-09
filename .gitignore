@@ -1,0 +1,20 @@
+# Directoare ?i fi?iere generate
+venv/
+build/
+test_results.xml
+
+# Fi?iere temporare ?i de cache
+*.pyc
+__pycache__/
+*.o
+*.a
+*.so
+
+# Fi?iere de configurare IDE sau editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Alte fi?iere temporare
+*.log

@@ -1,0 +1,44 @@
+stages:
+  - build
+  - test
+
+build_firmware:
+  stage: build
+  image: arm64v8/gcc:latest
+  script:
+    - mkdir build && cd build
+    - cmake ..
+    - make
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 week
+
+unit_tests:
+  stage: test
+  image: arm64v8/gcc:latest
+  script:
+    - cd build
+    - ./test_calculator
+  dependencies:
+    - build_firmware
+  artifacts:
+    paths:
+      - test_results.xml
+    expire_in: 1 week
+
+integration_tests:
+  stage: test
+  image: arm64v8/gcc:latest
+  script:
+    - ls build/libcalculator.so
+    - /app/venv/bin/pip install -r requirements.txt
+    - /app/venv/bin/pytest --version
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/build
+    - /app/venv/bin/pytest tests/integration/ --junitxml=test_results.xml
+  dependencies:
+    - build_firmware
+  artifacts:
+    paths:
+      - test_results.xml
+    expire_in: 1 week

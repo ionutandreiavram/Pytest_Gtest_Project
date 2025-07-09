@@ -1,0 +1,5 @@
+venv/
+build/
+test_results.xml
+.git/
+.gitignore
