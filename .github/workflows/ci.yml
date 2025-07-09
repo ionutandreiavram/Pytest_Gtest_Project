@@ -69,8 +69,8 @@ integration_tests:
           path: /app
       - name: Verify files
         run: ls -l /app
-      - name: Install dependencies
-	run: |
+- name: Install dependencies
+        run: |
           apt-get update
           apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
           cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
@@ -80,19 +80,19 @@ integration_tests:
           ls -l /app  # Verifica daca requirements.txt exista
           /app/venv/bin/pip install -r /app/requirements.txt
           find /app/venv/bin -type f -exec sed -i 's|#!/.*python.*|#!/app/venv/bin/python|' {} \;
-      - name: Download build artifacts
+- name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: build/
-      - name: Set execute permissions
+- name: Set execute permissions
         run: chmod +x build/libcalculator.so
       - name: Run integration tests
         run: |
           ls build/libcalculator.so
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/build
           /app/venv/bin/pytest /app/tests/integration/ --junitxml=/app/test_results.xml
-      - name: Store test results
+- name: Store test results
         uses: actions/upload-artifact@v4
         with:
           name: integration-test-results
