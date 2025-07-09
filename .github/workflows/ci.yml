@@ -50,12 +50,12 @@ jobs:
       - name: Run unit tests
         run: |
           cd build
-          ./test_calculator
+          ./test_calculator --gtest_output=xml:test_results.xml
       - name: Store test results
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
-          path: test_results.xml
+          path: build/test_results.xml
           retention-days: 7
 
   integration_tests:
