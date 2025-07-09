@@ -59,14 +59,14 @@ unit_tests:
           retention-days: 7
 
 
-integrations_tests:
+integration_tests:
     runs-on: ubuntu-latest
     container: gcc:latest
     needs: build_firmware
     steps:
       - uses: actions/checkout@v4
-	with:
-	path: /app
+        with:
+          path: /app
       - name: Verify files
         run: ls -l /app
       - name: Install dependencies
