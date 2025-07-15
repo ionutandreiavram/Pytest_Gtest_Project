@@ -120,7 +120,7 @@ jobs:
           path: build/
       - name: Set execute permissions
         run: chmod +x build/libcalculator.so
-      - name: Run integration tests
+      - name: Run integration testss
         run: |
           ls build/libcalculator.so
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
@@ -130,8 +130,18 @@ jobs:
           ls -l allure-results || echo "No files in allure-results"
       - name: Generate Allure report for PyTest
         run: |
+          chmod -R 755 allure-results  
           allure generate allure-results -o allure-report-integration --clean || echo "Failed to generate Allure report"
+          chmod -R 755 allure-report-integration  
           ls -l allure-report-integration || echo "No files in allure-report-integration"
+      - name: Deploy Allure report to GitHub Pages  
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report-integration
+          publish_branch: gh-pages
+          keep_files: false  
       - name: Store test results
         uses: actions/upload-artifact@v4
         with:
