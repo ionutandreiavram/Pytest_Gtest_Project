@@ -12,9 +12,10 @@ RUN apt-get update && apt-get install -y \
     openjdk-17-jre
 RUN cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
 
-RUN wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb \
-    && dpkg -i allure_2.30.0-1_all.deb \
-    && rm allure_2.30.0-1_all.deb
+RUN wget https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.30.0/allure-commandline-2.30.0.tgz \
+    && tar -zxvf allure-commandline-2.30.0.tgz -C /opt/ \
+    && ln -s /opt/allure-2.30.0/bin/allure /usr/bin/allure \
+    && rm allure-commandline-2.30.0.tgz
     
 WORKDIR /app
 COPY . .

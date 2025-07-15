@@ -15,11 +15,14 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev openjdk-17-jre
-          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
-          dpkg -i allure_2.30.0-1_all.deb
+          apt-get install -y --fix-missing
+          apt-get install -y -f
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev default-jre-headless openjdk-17-jre
+          wget https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.30.0/allure-commandline-2.30.0.tgz
+          tar -zxvf allure-commandline-2.30.0.tgz -C /opt/
+          ln -s /opt/allure-2.30.0/bin/allure /usr/bin/allure
           allure --version
-          rm allure_2.30.0-1_all.deb
+          rm allure-commandline-2.30.0.tgz
           cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
       - name: Build
         run: |
@@ -42,11 +45,14 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev openjdk-17-jre
-          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
-          dpkg -i allure_2.30.0-1_all.deb
+          apt-get install -y --fix-missing
+          apt-get install -y -f
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev default-jre-headless openjdk-17-jre
+          wget https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.30.0/allure-commandline-2.30.0.tgz
+          tar -zxvf allure-commandline-2.30.0.tgz -C /opt/
+          ln -s /opt/allure-2.30.0/bin/allure /usr/bin/allure
           allure --version
-          rm allure_2.30.0-1_all.deb
+          rm allure-commandline-2.30.0.tgz
           cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
       - name: Download build artifacts
         uses: actions/download-artifact@v4
