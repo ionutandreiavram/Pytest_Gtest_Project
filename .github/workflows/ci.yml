@@ -15,7 +15,11 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev openjdk-17-jre
+          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
+          dpkg -i allure_2.30.0-1_all.deb
+          allure --version
+          rm allure_2.30.0-1_all.deb
           cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
       - name: Build
         run: |
@@ -38,7 +42,11 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev openjdk-17-jre
+          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
+          dpkg -i allure_2.30.0-1_all.deb
+          allure --version
+          rm allure_2.30.0-1_all.deb
           cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -50,12 +58,20 @@ jobs:
       - name: Run unit tests
         run: |
           cd build
-          ./test_calculator --gtest_output=xml:test_results.xml
+          ./test_calculator --gtest_output=xml:test_results_gtest.xml
+      - name: Generate Allure report for GTest
+        run: |
+          mkdir -p allure-results
+          cp build/test_results_gtest.xml allure-results/
+          allure generate allure-results -o allure-report-unit --clean
+          ls -l allure-report-unit
       - name: Store test results
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
-          path: build/test_results.xml
+          path: |
+            build/test_results_gtest.xml
+            allure-report-unit/
           retention-days: 7
 
   integration_tests:
@@ -71,7 +87,11 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev openjdk-17-jre
+          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
+          dpkg -i allure_2.30.0-1_all.deb
+          allure --version
+          rm allure_2.30.0-1_all.deb
           python3 --version  
           python3 -m venv venv
           ls -l venv/bin  
@@ -94,10 +114,16 @@ jobs:
         run: |
           ls build/libcalculator.so
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
-          ./venv/bin/pytest tests/integration/ --junitxml=test_results.xml
+          ./venv/bin/pytest tests/integration/ --alluredir=allure-results --junitxml=test_results_pytest.xml
+      - name: Generate Allure report for PyTest
+        run: |
+          allure generate allure-results -o allure-report-integration --clean
+          ls -l allure-report-integration
       - name: Store test results
         uses: actions/upload-artifact@v4
         with:
           name: integration-test-results
-          path: test_results.xml
+          path: |
+            test_results_pytest.xml
+            allure-report-integration/
           retention-days: 7

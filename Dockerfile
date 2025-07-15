@@ -7,11 +7,17 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     python3.11-dev \
     libc6-dev \
-    libffi-dev
+    libffi-dev \
+    openjdk-17-jre
 RUN cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
+
+RUN wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb \
+    && dpkg -i allure_2.30.0-1_all.deb \
+    && rm allure_2.30.0-1_all.deb
+    
 WORKDIR /app
 COPY . .
-# ?terge orice mediu virtual existent
+
 RUN rm -rf /app/venv
 RUN python3 -m venv /app/venv
 RUN /app/venv/bin/python -m ensurepip --upgrade
