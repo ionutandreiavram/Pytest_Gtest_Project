@@ -80,6 +80,7 @@ jobs:
             allure-report-unit/
           retention-days: 7
 
+
   integration_tests:
     runs-on: ubuntu-latest
     container: gcc:latest
@@ -88,27 +89,30 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify files
         run: |
-          ls -l  
-          cat requirements.txt  
-      - name: Install dependencies
+          ls -l
+          cat requirements.txt
+      - name: Update and fix package manager
         run: |
           apt-get update
-          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev openjdk-17-jre
+          apt-get install -y --fix-missing
+          apt-get install -y -f
+      - name: Install dependencies
+        run: |
+          apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev default-jre-headless openjdk-17-jre
           wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
-          dpkg -i allure_2.30.0-1_all.deb
+          dpkg -i allure_2.30.0-1_all.deb || apt-get install -f
           allure --version
           rm allure_2.30.0-1_all.deb
-          python3 --version  
+          python3 --version
           python3 -m venv venv
-          ls -l venv/bin  
+          ls -l venv/bin
           ./venv/bin/python -m ensurepip --upgrade
           ./venv/bin/python -m pip install --upgrade pip
-          ./venv/bin/pip --version  
-          ls -l requirements.txt 
-          ./venv/bin/pip install -r requirements.txt --no-cache-dir --verbose 
-          ls -l venv/bin  
-          ./venv/bin/pip show pytest  
-          cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
+          ./venv/bin/pip --version
+          ls -l requirements.txt
+          ./venv/bin/pip install -r requirements.txt --no-cache-dir --verbose
+          ls -l venv/bin
+          ./venv/bin/pip show pytest allure-pytest
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -121,10 +125,13 @@ jobs:
           ls build/libcalculator.so
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
           ./venv/bin/pytest tests/integration/ --alluredir=allure-results --junitxml=test_results_pytest.xml
+      - name: Debug Allure results
+        run: |
+          ls -l allure-results || echo "No files in allure-results"
       - name: Generate Allure report for PyTest
         run: |
-          allure generate allure-results -o allure-report-integration --clean
-          ls -l allure-report-integration
+          allure generate allure-results -o allure-report-integration --clean || echo "Failed to generate Allure report"
+          ls -l allure-report-integration || echo "No files in allure-report-integration"
       - name: Store test results
         uses: actions/upload-artifact@v4
         with:
