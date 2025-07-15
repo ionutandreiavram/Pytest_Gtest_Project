@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     python3.11-dev \
     libc6-dev \
     libffi-dev \
+    default-jre-headless \
     openjdk-17-jre
 RUN cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
 
