@@ -199,9 +199,10 @@ jobs:
         run: |
           ls build/libcalculator.so
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
-          ./venv/bin/pytest tests/integration/ --alluredir=test_results/\
-            integration/allure-results --junitxml=test_results/\
-              integration/test_results_pytest.xml --verbose
+          ./venv/bin/pytest tests/integration/ \
+            --alluredir=test_results/integration/allure-results \
+            --junitxml=test_results/integration/test_results_pytest.xml \
+            --verbose
 
       - name: Debug Allure results
         run: |
