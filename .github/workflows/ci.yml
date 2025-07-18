@@ -1,205 +1,219 @@
+---
 name: CI Pipeline
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-     on:
-       push:
-         branches: [ main ]
-       pull_request:
-         branches: [ main ]
+jobs:
+  build_firmware:
+    runs-on: ubuntu-latest
+    container: gcc:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-     jobs:
-       build_firmware:
-         runs-on: ubuntu-latest
-         container: gcc:latest
-         steps:
-           - name: Checkout repository
-             uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --fix-missing
+          apt-get install -y -f
+          apt-get install -y cmake libgtest-dev python3 python3-pip \
+            python3-venv python3.11-dev libc6-dev libffi-dev \
+            default-jre-headless openjdk-17-jre
+          wget https://github.com/allure-framework/allure2/releases/\
+            download/2.30.0/allure_2.30.0-1_all.deb
+          dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
+          allure --version
+          rm allure_2.30.0-1_all.deb
+          cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
 
-           - name: Install dependencies
-             run: |
-               apt-get update
-               apt-get install -y --fix-missing
-               apt-get install -y -f
-               apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev default-jre-headless openjdk-17-jre
-               wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
-               dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
-               allure --version
-               rm allure_2.30.0-1_all.deb
-               cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
+      - name: Clean build
+        run: |
+          rm -rf build
 
-           - name: Clean build
-             run: |
-               rm -rf build
+      - name: Build
+        run: |
+          mkdir build && cd build
+          cmake ..
+          make
 
-           - name: Build
-             run: |
-               mkdir build && cd build
-               cmake ..
-               make
+      - name: Store artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+          retention-days: 7
 
-           - name: Store artifacts
-             uses: actions/upload-artifact@v4
-             with:
-               name: build-artifacts
-               path: build/
-               retention-days: 7
+  unit_tests:
+    runs-on: ubuntu-latest
+    container: gcc:latest
+    needs: build_firmware
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-       unit_tests:
-         runs-on: ubuntu-latest
-         container: gcc:latest
-         needs: build_firmware
-         steps:
-           - name: Checkout repository
-             uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y --fix-missing
+          apt-get install -y -f
+          apt-get install -y cmake libgtest-dev
+          wget https://github.com/allure-framework/allure2/releases/\
+            download/2.30.0/allure_2.30.0-1_all.deb
+          dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
+          allure --version
+          rm allure_2.30.0-1_all.deb
+          cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
 
-           - name: Install dependencies
-             run: |
-               apt-get update
-               apt-get install -y --fix-missing
-               apt-get install -y -f
-               apt-get install -y cmake libgtest-dev
-               wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
-               dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
-               allure --version
-               rm allure_2.30.0-1_all.deb
-               cd /usr/src/gtest && cmake . && make && cp lib/*.a /usr/lib/
+      - name: Clean unit test results
+        run: |
+          rm -rf test_results/unit allure-results-unit allure-report-unit
 
-           - name: Clean unit test results
-             run: |
-               rm -rf test_results/unit allure-results-unit allure-report-unit
+      - name: Create unit test results directory
+        run: |
+          mkdir -p test_results/unit
 
-           - name: Create unit test results directory
-             run: |
-               mkdir -p test_results/unit
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
 
-           - name: Download build artifacts
-             uses: actions/download-artifact@v4
-             with:
-               name: build-artifacts
-               path: build/
+      - name: Set execute permissions
+        run: |
+          chmod +x build/test_calculator
 
-           - name: Set execute permissions
-             run: |
-               chmod +x build/test_calculator
+      - name: Run unit tests
+        run: |
+          if [ -f build/test_calculator ]; then
+             ./build/test_calculator --gtest_output=xml:test_results\
+               /unit/test_results_unit.xml
+          else
+             echo "Error: Unit tests executable test_calculator not found"
+             exit 1
+          fi
+          if [ -f test_results/unit/test_results_unit.xml ]; then
+             echo "Unit tests results saved to \
+               test_results/unit/test_results_unit.xml:"
+             cat test_results/unit/test_results_unit.xml
+          else
+             echo "Error: test_results/unit/test_results_unit.xml not generated"
+             exit 1
+          fi
 
-           - name: Run unit tests
-             run: |
-               if [ -f build/test_calculator ]; then
-                 ./build/test_calculator --gtest_output=xml:test_results/unit/test_results_unit.xml
-               else
-                 echo "Error: Unit tests executable test_calculator not found"
-                 exit 1
-               fi
-               if [ -f test_results/unit/test_results_unit.xml ]; then
-                 echo "Unit tests results saved to test_results/unit/test_results_unit.xml:"
-                 cat test_results/unit/test_results_unit.xml
-               else
-                 echo "Error: test_results/unit/test_results_unit.xml not generated"
-                 exit 1
-               fi
+      - name: Generate Allure report for unit tests
+        run: |
+          mkdir -p allure-results-unit
+          cp test_results/unit/test_results_unit.xml allure-results-unit/
+          chmod -R 755 allure-results-unit
+          allure generate allure-results-unit -o allure-report-unit --clean
+          chmod -R 755 allure-report-unit
+          ls -l allure-report-unit
 
-           - name: Generate Allure report for unit tests
-             run: |
-               mkdir -p allure-results-unit
-               cp test_results/unit/test_results_unit.xml allure-results-unit/
-               chmod -R 755 allure-results-unit
-               allure generate allure-results-unit -o allure-report-unit --clean
-               chmod -R 755 allure-report-unit
-               ls -l allure-report-unit
+      - name: Store test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: |
+            test_results/unit/test_results_unit.xml
+             allure-report-unit/
+             rtention-days: 7
 
-           - name: Store test results
-             uses: actions/upload-artifact@v4
-             with:
-               name: unit-test-results
-               path: |
-                 test_results/unit/test_results_unit.xml
-                 allure-report-unit/
-               retention-days: 7
+  integration_tests:
+    runs-on: ubuntu-latest
+    container: gcc:latest
+    needs: [build_firmware, unit_tests]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-       integration_tests:
-         runs-on: ubuntu-latest
-         container: gcc:latest
-         needs: [build_firmware, unit_tests]
-         steps:
-           - name: Checkout repository
-             uses: actions/checkout@v4
+      - name: Verify files
+        run: |
+          ls -l
+          cat requirements.txt
 
-           - name: Verify files
-             run: |
-               ls -l
-               cat requirements.txt
+      - name: Update and fix package manager
+        run: |
+          apt-get update
+          apt-get install -y --fix-missing
+          apt-get install -y -f
 
-           - name: Update and fix package manager
-             run: |
-               apt-get update
-               apt-get install -y --fix-missing
-               apt-get install -y -f
+      - name: Install dependencies
+        run: |
+          apt-get install -y cmake libgtest-dev python3 python3-pip \
+            python3-venv python3.11-dev libc6-dev \
+            libffi-dev default-jre-headless openjdk-17-jre
+          wget https://github.com/allure-framework/allure2/releases/\
+            download/2.30.0/allure_2.30.0-1_all.deb
+          dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
+          allure --version
+          rm allure_2.30.0-1_all.deb
+          python3 --version
+          python3 -m venv venv
+          ./venv/bin/python -m ensurepip --upgrade
+          ./venv/bin/python -m pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt --no-cache-dir --verbose
+          ./venv/bin/pip show pytest allure-pytest
 
-           - name: Install dependencies
-             run: |
-               apt-get install -y cmake libgtest-dev python3 python3-pip python3-venv python3.11-dev libc6-dev libffi-dev default-jre-headless openjdk-17-jre
-               wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
-               dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
-               allure --version
-               rm allure_2.30.0-1_all.deb
-               python3 --version
-               python3 -m venv venv
-               ./venv/bin/python -m ensurepip --upgrade
-               ./venv/bin/python -m pip install --upgrade pip
-               ./venv/bin/pip install -r requirements.txt --no-cache-dir --verbose
-               ./venv/bin/pip show pytest allure-pytest
+      - name: Clean integration test results
+        run: |
+          rm -rf test_results/integration allure-results-unit \
+            allure-report-unit allure-report-integration
 
-           - name: Clean integration test results
-             run: |
-               rm -rf test_results/integration allure-results-unit allure-report-unit allure-report-integration
+      - name: Create integration test results directory
+        run: |
+          mkdir -p test_results/integration
 
-           - name: Create integration test results directory
-             run: |
-               mkdir -p test_results/integration
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
 
-           - name: Download build artifacts
-             uses: actions/download-artifact@v4
-             with:
-               name: build-artifacts
-               path: build/
+      - name: Download unit test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results
+          path: .
 
-           - name: Download unit test artifacts
-             uses: actions/download-artifact@v4
-             with:
-               name: unit-test-results
-               path: .
+      - name: Set execute permissions
+        run: |
+          chmod +x build/libcalculator.so
 
-           - name: Set execute permissions
-             run: |
-               chmod +x build/libcalculator.so
+      - name: Run integration tests
+        run: |
+          ls build/libcalculator.so
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
+          ./venv/bin/pytest tests/integration/ --alluredir=test_results/\
+            integration/allure-results --junitxml=test_results/\
+              integration/test_results_pytest.xml --verbose
 
-           - name: Run integration tests
-             run: |
-               ls build/libcalculator.so
-               export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
-               ./venv/bin/pytest tests/integration/ --alluredir=test_results/integration/allure-results --junitxml=test_results/integration/test_results_pytest.xml --verbose
+      - name: Debug Allure results
+        run: |
+          ls -l test_results/integration/allure-results || \
+            echo "No files in test_results/integration/allure-results"
 
-           - name: Debug Allure results
-             run: |
-               ls -l test_results/integration/allure-results || echo "No files in test_results/integration/allure-results"
+      - name: Generate Allure report for PyTest
+        run: |
+          chmod -R 755 test_results/integration/allure-results
+          allure generate test_results/integration/\
+            allure-results -o allure-report-integration --clean
+          chmod -R 755 allure-report-integration
+          ls -l allure-report-integration
 
-           - name: Generate Allure report for PyTest
-             run: |
-               chmod -R 755 test_results/integration/allure-results
-               allure generate test_results/integration/allure-results -o allure-report-integration --clean
-               chmod -R 755 allure-report-integration
-               ls -l allure-report-integration
+      - name: Prepare Allure reports for GitHub Pages
+        run: |
+          mkdir -p allure-reports/unit allure-reports/integration
+          cp -r allure-report-unit/* allure-reports/unit/
+          cp -r allure-report-integration/* allure-reports/integration/
 
-           - name: Prepare Allure reports for GitHub Pages
-             run: |
-               mkdir -p allure-reports/unit allure-reports/integration
-               cp -r allure-report-unit/* allure-reports/unit/
-               cp -r allure-report-integration/* allure-reports/integration/
-
-           - name: Deploy Allure reports to GitHub Pages
-             uses: peaceiris/actions-gh-pages@v4
-             if: always()
-             with:
-               github_token: ${{ secrets.GITHUB_TOKEN }}
-               publish_dir: allure-reports
-               publish_branch: gh-pages
-               keep_files: false
+      - name: Deploy Allure reports to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-reports
+          publish_branch: gh-pages
+          keep_files: false
