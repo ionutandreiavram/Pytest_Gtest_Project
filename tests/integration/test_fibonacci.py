@@ -13,6 +13,8 @@ lib.fibonacci.restype = ctypes.c_uint64
 @allure.story("Fibonacci Calculation")
 @allure.description("Test the Fibonacci functionality with multiple input combinations.")
 @allure.severity(allure.severity_level.NORMAL)
+@allure.label("tester", "Ionut")
+@allure.label("test_type", "integration")
 @pytest.mark.parametrize("n, expected", [
     (0, 0), # Test case 1 -  Fibonacci(0) = 0
     (1, 1), # Test case 2 -  Fibonacci(1) = 1
@@ -32,9 +34,15 @@ lib.fibonacci.restype = ctypes.c_uint64
 
 ])
 def test_fibonacci(n, expected):
-    with allure.step(f"Call fibonacci({n}) and verify result"):
+    with allure.step(f"Validate input n={n}"):
+        allure.attach(f"Input parameter is {n}", name="Input Validation", attachment_type=allure.attachment_type.TEXT)
+        assert n>=0, f"Input is {n} and should be positive"
+    with allure.step(f"Compute fibonacci({n})"):
         result = lib.fibonacci(n)
-    with allure.step(f"Expected result for fibonacci({n}) is {expected} and got {result}"):
+        allure.attach(f"Input: n={n}\nExpected: {expected}\nActual: {result}", 
+                      name="Test Data", 
+                      attachment_type=allure.attachment_type.TEXT)
+    with allure.step(f"Verify result for fibonacci({n})"):
         assert result == expected, f"Should be {expected}, but is {result}"
 
           

@@ -210,6 +210,15 @@ jobs:
           ls -l test_results/integration/allure-results || \
             echo "No files in test_results/integration/allure-results"
 
+      - name: Create Allure environment file
+        run: |
+          echo "Environment=GitHub Actions" > test_results/integration/allure-results/environment.properties
+          echo "Python_Version=3.11.2" >> test_results/integration/allure-results/environment.properties
+          echo "Pytest_Version=7.4.0" >> test_results/integration/allure-results/environment.properties
+          echo "Allure_Pytest_Version=2.14.3" >> test_results/integration/allure-results/environment.properties
+          echo "OS=Debian (gcc:latest)" >> test_results/integration/allure-results/environment.properties
+          echo "Tester=Ionut" >> test_results/integration/allure-results/environment.properties
+
       - name: Generate Allure report for PyTest
         run: |
           chmod -R 755 test_results/integration/allure-results
