@@ -173,7 +173,8 @@ jobs:
       - name: Clean integration test results
         run: |
           rm -rf test_results/integration allure-results-unit \
-            allure-report-unit allure-report-integration
+            allure-report-unit allure-report-integration \
+            allure-reports/integration
 
       - name: Create integration test results directory
         run: |
@@ -237,10 +238,14 @@ jobs:
             -o allure-report-integration --clean --verbose
           chmod -R 755 allure-report-integration
           ls -l allure-report-integration
+          echo "Generated report files count:"
+          find allure-report-integration -type f | wc -l
+          echo "Generated report files:"
           find allure-report-integration -type f
 
       - name: Prepare Allure reports for GitHub Pages
         run: |
+          rm -rf allure-reports/integration
           mkdir -p allure-reports/unit allure-reports/integration
           cp -r allure-report-unit/* allure-reports/unit/
           cp -r allure-report-integration/* allure-reports/integration/
@@ -261,6 +266,7 @@ jobs:
             <p><a href="/Pytest_Gtest_Project/integration/">View Integration Test Reports</a></p>
           </body>
           </html>' > allure-reports/index.html
+          ls -l allure-reports/integration
 
       - name: Deploy Allure reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
