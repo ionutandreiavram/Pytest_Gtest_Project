@@ -72,7 +72,19 @@ jobs:
       - name: Create unit test results directory
         run: |
           mkdir -p test_results/unit
-          chmod -R 755 test_results/unit
+          chmod -R 777 test_results/unit
+
+      - name: Debug directory and permissions
+        run: |
+          echo "Current directory: $PWD"
+          echo "GitHub workspace: $GITHUB_WORKSPACE"
+          echo "Target XML path: $GITHUB_WORKSPACE/test_results/unit/test_results_unit.xml"
+          ls -ld test_results test_results/unit
+          stat test_results/unit
+          echo "Testing write permission to test_results/unit"
+          touch test_results/unit/test_write.txt || \
+            echo "Failed to write to test_results/unit"
+          ls -l test_results/unit
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -84,22 +96,25 @@ jobs:
         run: |
           chmod +x build/test_calculator
 
-      - name: Run unit tests
+      - name: Run unit tests with output
         run: |
+          cd $GITHUB_WORKSPACE
           if [ -f build/test_calculator ]; then
-             ./build/test_calculator --gtest_output=xml:$GITHUB_WORKSPACE/\
-               test_results/unit/test_results_unit.xml
+            ./build/test_calculator --gtest_output=xml:test_results/unit/test_results_unit.xml
           else
-             echo "Error: Unit tests executable test_calculator not found"
-             exit 1
+            echo "Error: Unit tests executable test_calculator not found"
+            exit 1
           fi
+      - name: Debug unit test output
+        run: |
+          ls -l test_results/unit || \
+            echo "Directory test_results/unit not found"
           if [ -f test_results/unit/test_results_unit.xml ]; then
-             echo "Unit tests results saved to \
-               test_results/unit/test_results_unit.xml:"
-             cat test_results/unit/test_results_unit.xml
+            echo "Unit tests results saved to test_results/unit/test_results_unit.xml:"
+            cat test_results/unit/test_results_unit.xml
           else
-             echo "Error: test_results/unit/test_results_unit.xml not generated"
-             exit 1
+            echo "Error: test_results/unit/test_results_unit.xml not generated"
+            exit 1
           fi
 
       - name: Generate Allure report for unit tests
