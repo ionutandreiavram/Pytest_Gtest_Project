@@ -221,29 +221,29 @@ jobs:
           cat test_results/integration/allure-results/environment.properties
 
       - name: Debug Allure results
-            run: |
-              ls -ld test_results/integration/allure-results || \
-                echo "Directory test_results/integration/allure-results not found"
-              ls -l test_results/integration/allure-results || \
-                echo "No files in test_results/integration/allure-results"
-              if [ -f test_results/integration/allure-results/environment.properties ]; then
-                echo "Environment properties:"
-                cat test_results/integration/allure-results/environment.properties
-              else
-                echo "environment.properties not found"
-                exit 1
-              fi
-              echo "Allure result files count (expect ~28):"
-              find test_results/integration/allure-results -type f | wc -l
-              echo "Allure result files:"
-              find test_results/integration/allure-results -type f
-              if ls test_results/integration/allure-results/*.json >/dev/null 2>&1; then
-                echo "Sample JSON content (first file):"
-                head -n 20 test_results/integration/allure-results/*.json | head -n 20
-              else
-                echo "No JSON files found in test_results/integration/allure-results"
-                exit 1
-              fi
+        run: |
+          ls -ld test_results/integration/allure-results || \
+            echo "Directory test_results/integration/allure-results not found"
+          ls -l test_results/integration/allure-results || \
+            echo "No files in test_results/integration/allure-results"
+          if [ -f test_results/integration/allure-results/environment.properties ]; then
+            echo "Environment properties:"
+            cat test_results/integration/allure-results/environment.properties
+          else
+            echo "environment.properties not found"
+            exit 1
+          fi
+          echo "Allure result files count (expect ~28):"
+          find test_results/integration/allure-results -type f | wc -l
+          echo "Allure result files:"
+          find test_results/integration/allure-results -type f
+          if ls test_results/integration/allure-results/*.json >/dev/null 2>&1; then
+            echo "Sample JSON content (first file):"
+            head -n 20 test_results/integration/allure-results/*.json | head -n 20
+          else
+            echo "No JSON files found in test_results/integration/allure-results"
+            exit 1
+          fi
 
       - name: Generate Allure report for PyTest
         run: |
