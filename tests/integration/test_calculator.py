@@ -6,42 +6,62 @@ import pytest
 lib_path = os.path.join(os.path.dirname(__file__), "../../build/libcalculator.so")
 lib = ctypes.CDLL(lib_path)
 
-lib.add_numbers.argtypes = [ctypes.c_double, ctypes.c_double]
-lib.add_numbers.restype = ctypes.c_double
-lib.sub_numbers.argtypes = [ctypes.c_double, ctypes.c_double]
-lib.sub_numbers.restype = ctypes.c_double
+lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
+lib.add.restype = ctypes.c_int
+lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
+lib.subtract.restype = ctypes.c_int
 
 @allure.feature("Calculator Integration Tests")
-@allure.story("Addition Operation")
+@allure.story("Addition Calculation")
+@allure.description("Test the addition functionality with multiple input combinations.")
 @allure.severity(allure.severity_level.NORMAL)
-@allure.description("Test the addition functionality of the calculator library with multiple input combinations.")
+@allure.label("tester", "Ionut")
+@allure.label("test_type", "integration")
 @pytest.mark.parametrize("a, b, expected", [
-       (3, 5, 8),    # Test case 1 - Pozitive numbers
-       (0, 0, 0),    # Test case 2 - Zero inputs
-       (-2, 3, 1),   # Test case 3 - Negative and positive
-       (-1, -4, -5)  # Test case 4 - Negative numbers
-   ])
+    (3, 5, 8),
+    (0, 0, 0),
+    (-2, 3, 1),
+    (-1, -4, -5)
+])
 def test_add_numbers(a, b, expected):
-    with allure.step(f"Call add({a}, {b}) and verify result"):
-        result = lib.add_numbers(a, b)
-        assert abs(result - expected) < 1e-10, f"Should be {expected}, but is {result}"
+    with allure.step(f"Validate inputs a={a}, b={b}"):
+        allure.attach(f"Inputs: a={a}, b={b}", 
+                      name="Input Validation", 
+                      attachment_type=allure.attachment_type.TEXT)
+    with allure.step(f"Compute {a} + {b}"):
+        result = lib.add(a, b)
+        allure.attach(f"Inputs: a={a}, b={b}\nExpected: {expected}\nActual: {result}", 
+                      name="Test Data", 
+                      attachment_type=allure.attachment_type.TEXT)
+    with allure.step(f"Verify result for {a} + {b}"):
+        assert result == expected, f"Expected {expected}, but got {result}"
 
 @allure.feature("Calculator Integration Tests")
-@allure.story("Subtraction Operation")
+@allure.story("Subtraction Calculation")
+@allure.description("Test the subtraction functionality with multiple input combinations.")
 @allure.severity(allure.severity_level.NORMAL)
+@allure.label("tester", "Ionut")
+@allure.label("test_type", "integration")
 @pytest.mark.parametrize("a, b, expected", [
-       (5, 3, 2), # Test case 1 - Positive numbers
-       (10, 10, 0), # Test case 2 - Zero result
-       (3, 5, -2), # Test case 3 - Result is negative
-       (-1, -4, 3), # Test case 4 - Negative numbers
-       (2, -3, 5),  # Test case 5 - Positive and negative
-       (0, 0, 0),   # Test case 6 - Both inputs are zero
-       (5, 4, 1),   # Test case 7 - Positive numbers
-       (0, 0, 0),   # Test case 8 - Both inputs are zero
-       (-2, -3, 1)  # Test case 9 - Negative numbers    
-   ])
+    (5, 3, 2),
+    (10, 10, 0),
+    (3, 5, -2),
+    (-1, -4, 3),
+    (2, -3, 5),
+    (0, 0, 0),
+    (5, 4, 1),
+    (0, 0, 0),
+    (-2, -3, 1)
+])
 def test_sub_numbers(a, b, expected):
-    with allure.step(f"Call subtract({a}, {b}) and verify result"):
-        result = lib.sub_numbers(a, b)
-        assert abs(result - expected) < 1e-10, f"Should be {expected}, but is {result}"
-# End of file: tests/integration/test_calculator.py
+    with allure.step(f"Validate inputs a={a}, b={b}"):
+        allure.attach(f"Inputs: a={a}, b={b}", 
+                      name="Input Validation", 
+                      attachment_type=allure.attachment_type.TEXT)
+    with allure.step(f"Compute {a} - {b}"):
+        result = lib.subtract(a, b)
+        allure.attach(f"Inputs: a={a}, b={b}\nExpected: {expected}\nActual: {result}", 
+                      name="Test Data", 
+                      attachment_type=allure.attachment_type.TEXT)
+    with allure.step(f"Verify result for {a} - {b}"):
+        assert result == expected, f"Expected {expected}, but got {result}"

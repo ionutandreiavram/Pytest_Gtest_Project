@@ -209,6 +209,14 @@ jobs:
         run: |
           ls -l test_results/integration/allure-results || \
             echo "No files in test_results/integration/allure-results"
+          if [ -f test_results/integration/allure-results/environment.properties ]; then
+            echo "Environment properties:"
+            cat test_results/integration/allure-results/environment.properties
+          else
+            echo "environment.properties not found"
+          fi
+          echo "Allure result files:"
+          find test_results/integration/allure-results -type f
 
       - name: Create Allure environment file
         run: |
@@ -217,15 +225,19 @@ jobs:
           echo "Pytest_Version=7.4.0" >> test_results/integration/allure-results/environment.properties
           echo "Allure_Pytest_Version=2.14.3" >> test_results/integration/allure-results/environment.properties
           echo "OS=Debian (gcc:latest)" >> test_results/integration/allure-results/environment.properties
-          echo "Tester=Ionut" >> test_results/integration/allure-results/environment.properties
-
+          echo "Tester=Ionut Andrei Avram" >> test_results/integration/allure-results/environment.properties
+          echo "Repository=https://github.com/ionutandreiavram/Pytest_Gtest_Project" >> test_results/integration/allure-results/environment.properties
+          cat test_results/integration/allure-results/environment.properties
+          
       - name: Generate Allure report for PyTest
         run: |
-          chmod -R 755 test_results/integration/allure-results
-          allure generate test_results/integration/\
-            allure-results -o allure-report-integration --clean
+          rm -rf allure-report-integration
+          chmod -R 777 test_results/integration/allure-results
+          allure generate test_results/integration/allure-results \
+            -o allure-report-integration --clean --verbose
           chmod -R 755 allure-report-integration
           ls -l allure-report-integration
+          find allure-report-integration -type f
 
       - name: Prepare Allure reports for GitHub Pages
         run: |

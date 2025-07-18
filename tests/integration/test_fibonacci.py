@@ -44,5 +44,3 @@ def test_fibonacci(n, expected):
                       attachment_type=allure.attachment_type.TEXT)
     with allure.step(f"Verify result for fibonacci({n})"):
         assert result == expected, f"Should be {expected}, but is {result}"
-
-          
