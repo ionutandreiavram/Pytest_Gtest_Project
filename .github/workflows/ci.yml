@@ -72,6 +72,7 @@ jobs:
       - name: Create unit test results directory
         run: |
           mkdir -p test_results/unit
+          chmod -R 755 test_results/unit
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -86,8 +87,8 @@ jobs:
       - name: Run unit tests
         run: |
           if [ -f build/test_calculator ]; then
-             ./build/test_calculator --gtest_output=xml:test_results\
-               /unit/test_results_unit.xml
+             ./build/test_calculator --gtest_output=xml:$GITHUB_WORKSPACE/\
+               test_results/unit/test_results_unit.xml
           else
              echo "Error: Unit tests executable test_calculator not found"
              exit 1
