@@ -22,8 +22,7 @@ jobs:
           apt-get install -y cmake libgtest-dev python3 python3-pip \
             python3-venv python3.11-dev libc6-dev libffi-dev \
             default-jre-headless openjdk-17-jre
-          wget https://github.com/allure-framework/allure2/\
-            releases/download/2.30.0/allure_2.30.0-1_all.deb
+          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
           dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
           allure --version
           rm allure_2.30.0-1_all.deb
@@ -60,8 +59,7 @@ jobs:
           apt-get install -y --fix-missing
           apt-get install -y -f
           apt-get install -y cmake libgtest-dev
-          wget https://github.com/allure-framework/allure2/\
-            releases/download/2.30.0/allure_2.30.0-1_all.deb
+          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
           dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
           allure --version
           rm allure_2.30.0-1_all.deb
@@ -145,8 +143,7 @@ jobs:
           apt-get install -y cmake libgtest-dev python3 python3-pip \
             python3-venv python3.11-dev libc6-dev \
             libffi-dev default-jre-headless openjdk-17-jre
-          wget https://github.com/allure-framework/allure2/releases/\
-            download/2.30.0/allure_2.30.0-1_all.deb
+          wget https://github.com/allure-framework/allure2/releases/download/2.30.0/allure_2.30.0-1_all.deb
           dpkg -i allure_2.30.0-1_all.deb || apt-get install -f -y
           allure --version
           rm allure_2.30.0-1_all.deb
