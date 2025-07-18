@@ -188,58 +188,26 @@ jobs:
           name: build-artifacts
           path: build/
 
-      - name: Download unit test artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: unit-test-results
-          path: .
-
       - name: Run integration tests
-        continue-on-error: true
-        run: |
-          echo "Checking library files:"
-          ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
-          echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-          ./venv/bin/pip show pytest allure-pytest
-          ./venv/bin/pytest --version
-          ./venv/bin/pytest tests/integration/ \
-            --alluredir=test_results/integration/allure-results \
-            --junitxml=test_results/integration/test_results_pytest.xml \
-            --verbose || echo "Pytest exited with non-zero code"
-          echo "Allure results after pytest:"
-          ls -l test_results/integration/allure-results || echo "No Allure results generated"
-          find test_results/integration/allure-results -type f
-          if ls test_results/integration/allure-results/*.json >/dev/null 2>&1; then
-            echo "Sample JSON content (first file):"
-            head -n 20 test_results/integration/allure-results/*.json | head -n 20
-          else
-            echo "No JSON files found in test_results/integration/allure-results"
-          fi
-
-      - name: Debug Allure results
-        run: |
-          ls -ld test_results/integration/allure-results || \
-            echo "Directory test_results/integration/allure-results not found"
-          ls -l test_results/integration/allure-results || \
-            echo "No files in test_results/integration/allure-results"
-          if [ -f test_results/integration/allure-results/environment.properties ]; then
-            echo "Environment properties:"
-            cat test_results/integration/allure-results/environment.properties
-          else
-            echo "environment.properties not found"
-          fi
-          echo "Allure result files count (expect ~28):"
-          find test_results/integration/allure-results -type f | wc -l
-          echo "Allure result files:"
-          find test_results/integration/allure-results -type f
-          if ls test_results/integration/allure-results/*.json >/dev/null 2>&1; then
-            echo "Sample JSON content (first file):"
-            head -n 20 test_results/integration/allure-results/*.json | head -n 20
-          else
-            echo "No JSON files found in test_results/integration/allure-results"
-            exit 1
-          fi
+            continue-on-error: true
+            run: |
+              echo "Checking library files:"
+              ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
+              export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
+              echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+              echo "Test files:"
+              ls -l tests/integration/*.py
+              ./venv/bin/pip show pytest allure-pytest
+              ./venv/bin/pytest --version
+              ./venv/bin/pytest tests/integration/ \
+                --alluredir=test_results/integration/allure-results \
+                --junitxml=test_results/integration/test_results_pytest.xml \
+                --verbose || echo "Pytest exited with non-zero code"
+              echo "Junit XML output:"
+              cat test_results/integration/test_results_pytest.xml || echo "Junit XML not generated"
+              echo "Allure results after pytest:"
+              ls -l test_results/integration/allure-results || echo "No Allure results generated"
+              find test_results/integration/allure-results -type f
 
       - name: Create Allure environment file
         run: |
@@ -251,7 +219,32 @@ jobs:
           echo "Tester=Ionut" >> test_results/integration/allure-results/environment.properties
           echo "Repository=https://github.com/ionutandreiavram/Pytest_Gtest_Project" >> test_results/integration/allure-results/environment.properties
           cat test_results/integration/allure-results/environment.properties
-          
+
+      - name: Debug Allure results
+            run: |
+              ls -ld test_results/integration/allure-results || \
+                echo "Directory test_results/integration/allure-results not found"
+              ls -l test_results/integration/allure-results || \
+                echo "No files in test_results/integration/allure-results"
+              if [ -f test_results/integration/allure-results/environment.properties ]; then
+                echo "Environment properties:"
+                cat test_results/integration/allure-results/environment.properties
+              else
+                echo "environment.properties not found"
+                exit 1
+              fi
+              echo "Allure result files count (expect ~28):"
+              find test_results/integration/allure-results -type f | wc -l
+              echo "Allure result files:"
+              find test_results/integration/allure-results -type f
+              if ls test_results/integration/allure-results/*.json >/dev/null 2>&1; then
+                echo "Sample JSON content (first file):"
+                head -n 20 test_results/integration/allure-results/*.json | head -n 20
+              else
+                echo "No JSON files found in test_results/integration/allure-results"
+                exit 1
+              fi
+
       - name: Generate Allure report for PyTest
         run: |
           rm -rf allure-report-integration
