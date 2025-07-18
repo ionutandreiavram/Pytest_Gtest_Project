@@ -223,6 +223,17 @@ jobs:
           mkdir -p allure-reports/unit allure-reports/integration
           cp -r allure-report-unit/* allure-reports/unit/
           cp -r allure-report-integration/* allure-reports/integration/
+          echo '<!DOCTYPE html>
+          <html>
+          <head>
+            <title>Pytest_Gtest_Project Test Reports</title>
+            <meta http-equiv="refresh" content="0; url=/Pytest_Gtest_Project/unit/">
+          </head>
+          <body>
+            <p>Redirecting to <a href="/Pytest_Gtest_Project/unit/">Unit Test Reports</a></p>
+            <p>Or view <a href="/Pytest_Gtest_Project/integration/">Integration Test Reports</a></p>
+          </body>
+          </html>' > allure-reports/index.html
 
       - name: Deploy Allure reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
