@@ -189,25 +189,25 @@ jobs:
           path: build/
 
       - name: Run integration tests
-            continue-on-error: true
-            run: |
-              echo "Checking library files:"
-              ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
-              export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
-              echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-              echo "Test files:"
-              ls -l tests/integration/*.py
-              ./venv/bin/pip show pytest allure-pytest
-              ./venv/bin/pytest --version
-              ./venv/bin/pytest tests/integration/ \
-                --alluredir=test_results/integration/allure-results \
-                --junitxml=test_results/integration/test_results_pytest.xml \
-                --verbose || echo "Pytest exited with non-zero code"
-              echo "Junit XML output:"
-              cat test_results/integration/test_results_pytest.xml || echo "Junit XML not generated"
-              echo "Allure results after pytest:"
-              ls -l test_results/integration/allure-results || echo "No Allure results generated"
-              find test_results/integration/allure-results -type f
+          continue-on-error: true
+          run: |
+            echo "Checking library files:"
+            ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
+            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
+            echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+            echo "Test files:"
+            ls -l tests/integration/*.py
+            ./venv/bin/pip show pytest allure-pytest
+            ./venv/bin/pytest --version
+            ./venv/bin/pytest tests/integration/ \
+              --alluredir=test_results/integration/allure-results \
+              --junitxml=test_results/integration/test_results_pytest.xml \
+              --verbose || echo "Pytest exited with non-zero code"
+            echo "Junit XML output:"
+            cat test_results/integration/test_results_pytest.xml || echo "Junit XML not generated"
+            echo "Allure results after pytest:"
+            ls -l test_results/integration/allure-results || echo "No Allure results generated"
+            find test_results/integration/allure-results -type f
 
       - name: Create Allure environment file
         run: |
