@@ -188,15 +188,21 @@ jobs:
           name: build-artifacts
           path: build/
 
+      - name: Set execute permissions on libraries
+        run: |
+          ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
+          chmod +x build/libcalculator.so build/libfibonacci.so || echo "Failed to set execute permissions"
+          ls -l build/libcalculator.so build/libfibonacci.so
+
       - name: Run integration tests
-        continue-on-error: true
         run: |
           echo "Checking library files:"
           ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
+          ldd build/libfibonacci.so || echo "Failed to resolve libfibonacci.so dependencies"
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
           echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
           echo "Test files:"
-          ls -l tests/integration/*.py
+          ls -l tests/integration/*.py || echo "No test files found"
           ./venv/bin/pip show pytest allure-pytest
           ./venv/bin/pytest --version
           ./venv/bin/pytest tests/integration/ \
@@ -208,6 +214,12 @@ jobs:
           echo "Allure results after pytest:"
           ls -l test_results/integration/allure-results || echo "No Allure results generated"
           find test_results/integration/allure-results -type f
+          if ls test_results/integration/allure-results/*.json >/dev/null 2>&1; then
+            echo "Sample JSON content (first file):"
+            head -n 20 test_results/integration/allure-results/*.json | head -n 20
+          else
+            echo "No JSON files found in test_results/integration/allure-results"
+          fi
 
       - name: Create Allure environment file
         run: |
