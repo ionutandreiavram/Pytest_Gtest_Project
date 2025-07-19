@@ -1,0 +1,3 @@
+Inputs: a=0, b=0
+Expected: 0
+Actual: 0.0
