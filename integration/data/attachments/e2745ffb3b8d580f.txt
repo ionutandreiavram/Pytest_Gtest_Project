@@ -1,3 +1,0 @@
-Input: n=4
-Expected: 3
-Actual: 3

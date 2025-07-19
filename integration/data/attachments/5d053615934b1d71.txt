@@ -1,3 +1,0 @@
-Input: n=0
-Expected: 0
-Actual: 0

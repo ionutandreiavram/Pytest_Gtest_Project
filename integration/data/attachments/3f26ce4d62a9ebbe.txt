@@ -1,3 +1,0 @@
-Input: n=20
-Expected: 6765
-Actual: 6765
