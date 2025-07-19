@@ -83,7 +83,7 @@ class TestFibonacciFunctionality:
              allure.attach(f"Input parameter is {n}", name="Input Validation", attachment_type=allure.attachment_type.TEXT)
              if n < 0:
                 self.lib.fibonacci.argtypes = [ctypes.c_int64]
-                self.lib.fibonacci.argtypes = ctypes.c_int64
+                self.lib.fibonacci.restype = ctypes.c_int64
              
         with allure.step(f"Compute fibonacci({n})"):
             result = lib.fibonacci(n)
@@ -95,5 +95,5 @@ class TestFibonacciFunctionality:
             assert result == expected, f"Result should be {expected}, but is {result}"
             if n<0:
                 self.lib.fibonacci.argtypes = [ctypes.c_uint64]
-                self.lib.fibonacci.argtypes = ctypes.c_uint64
+                self.lib.fibonacci.restype = ctypes.c_uint64
     
