@@ -218,6 +218,9 @@ jobs:
           cat test_results/integration/test_results_pytest.xml || echo "Junit XML not generated"
           echo "Allure results after pytest:"
           ls -l test_results/integration/allure-results || echo "No Allure results generated"
+          echo "Generating Allure integration report:"
+          allure generate test_results/integration/allure-results -o allure-report-integration --clean || echo "Failed to generate allure-report-integration"
+          ls -l allure-report-integration || echo "allure-report-integration not generated"
           find test_results/integration/allure-results -type f
           if ls test_results/integration/allure-results/*.json >/dev/null 2>&1; then
             echo "Sample JSON content (first file):"
@@ -282,11 +285,16 @@ jobs:
           fi
 
       - name: Prepare Allure reports for GitHub Pages
+        continue-on-error: true
         run: |
           rm -rf allure-reports/integration
           mkdir -p allure-reports/unit allure-reports/integration
-          cp -r allure-report-unit/* allure-reports/unit/
-          cp -r allure-report-integration/* allure-reports/integration/
+          echo "Checking allure-report-unit:"
+          ls -l allure-report-unit || echo "allure-report-unit not found"
+          echo "Checking allure-report-integration:"
+          ls -l allure-report-integration || echo "allure-report-integration not found"
+          cp -r allure-report-unit/* allure-reports/unit/ || echo "Failed to copy allure-report-unit"
+          cp -r allure-report-integration/* allure-reports/integration/ || echo "Failed to copy allure-report-integration"
           echo '<!DOCTYPE html>
           <html>
           <head>
@@ -304,6 +312,7 @@ jobs:
             <p><a href="/Pytest_Gtest_Project/integration/">View Integration Test Reports</a></p>
           </body>
           </html>' > allure-reports/index.html
+          echo "Integration report files:"
           ls -l allure-reports/integration
 
       - name: Deploy Allure reports to GitHub Pages
