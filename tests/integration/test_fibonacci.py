@@ -11,7 +11,10 @@ lib.fibonacci.restype = ctypes.c_uint64
 
 @allure.feature("Fibonacci Integration Tests")
 @allure.story("Fibonacci Calculation")
-@allure.description("Test the Fibonacci functionality with multiple input combinations.")
+@allure.description("Tests the C Fibonacci function with various valid inputs.\n \
+                     Args: \n \
+                     n (uint64): The input number for the Fibonacci calculation.\n \
+                     expected (uint64): The expected Fibonacci result for 'n'.")
 @allure.severity(allure.severity_level.NORMAL)
 @allure.label("tester", "Ionut")
 @allure.label("test_type", "integration")
@@ -32,23 +35,30 @@ lib.fibonacci.restype = ctypes.c_uint64
     (50, 12586269025), # Test case 14 -  Fibonacci(50) = 12586269025
     (60, 1548008755920), # Test case 15 -  Fibonacci(60) = 1548008755920
     (93, 12200160415121876738), # Test case 16 - Fibonacci(93) = 12200160415121876738 
-    (-1, -1) # Test case 17 - Fibonacci(-1) = -1
+    (-1, -1) # Test case 17 - Fibonacci(17) = -1
 ])
 def test_fibonacci(n, expected):
     """
     Tests the C Fibonacci function with various valid inputs.
 
     Args:
-        n (int): The input number for the Fibonacci calculation.
-        expected (int): The expected Fibonacci result for 'n'.
+        n (uint64): The input number for the Fibonacci calculation.
+        expected (uint64): The expected Fibonacci result for 'n'.
     """
     with allure.step(f"Validate input n={n}"):
-        allure.attach(f"Input parameter is {n}", name="Input Validation", attachment_type=allure.attachment_type.TEXT)
-        assert n>=0, f"Input is {n} and should be positive"
+         allure.attach(f"Input parameter is {n}", name="Input Validation", attachment_type=allure.attachment_type.TEXT)
+         if n < 0:
+            fibonacci_lib.fibonacci.argtypes = [ctypes.c_int64]
+            fibonacci_lib.fibonacci.restype = ctypes.c_int64
+         
     with allure.step(f"Compute fibonacci({n})"):
         result = lib.fibonacci(n)
         allure.attach(f"Input: n={n}\nExpected: {expected}\nActual: {result}", 
                       name="Test Data", 
                       attachment_type=allure.attachment_type.TEXT)
+                      
     with allure.step(f"Verify result for fibonacci({n})"):
-        assert result == expected, f"Should be {expected}, but is {result}"
+        assert result == expected, f"Result should be {expected}, but is {result}"
+        if n<0:
+            lib.fibonacci.argtypes = [ctypes.c_uint64]
+            lib.fibonacci.restype = ctypes.c_uint64
