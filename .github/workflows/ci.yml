@@ -185,7 +185,8 @@ jobs:
         run: |
           rm -rf test_results/integration  \
             allure-report-integration \
-            allure-reports/integration
+            allure-reports/integration \
+            allure-history
 
       - name: Create integration test results directory
         run: |
@@ -193,6 +194,49 @@ jobs:
           chmod -R 777 test_results/integration/allure-results
           ls -ld test_results/integration/allure-results
 
+      - name: Download Allure history
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-history # This name must match the upload name later
+          path: allure-history # The directory where the artifact will be downloaded
+        continue-on-error: true # Important: Allows the workflow to continue if no history artifact is found (e.g., on the first run)
+        
+      - name: Generate Allure environment and executor info
+      run: |
+        ALLURE_RESULTS_DIR="test_results/integration/allure-results"
+        # environment.properties - provides general test environment details
+        echo "OS.Name=$(uname -s)" > "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "OS.Version=$(uname -r)" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "Python.Version=$(python3 -c 'import sys; print(sys.version.split()[0])')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "Pytest_Version=$(./venv/bin/pytest --version | head -n 1 | awk '{print $2}')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "Allure_Pytest_Version=$(./venv/bin/pip show allure-pytest | grep Version | awk '{print $2}')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "Allure_CLI_Version=$(allure --version | head -n 1)" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "Tester=${{ github.actor }}" >> "${ALLURE_RESULTS_DIR}/environment.properties" # Uses the GitHub username
+        echo "GitHub.RunId=${{ github.run_id }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "GitHub.RunNumber=${{ github.run_number }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "GitHub.Workflow=${{ github.workflow }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "GitHub.Ref=${{ github.ref }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "GitHub.SHA=${{ github.sha }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        echo "Repository=${{ github.server_url }}/${{ github.repository }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+        # executor.json - provides details about the CI system/executor
+        cat <<EOF > "${ALLURE_RESULTS_DIR}/executor.json"
+        {
+          "name": "GitHub Actions",
+          "type": "github",
+          "url": "${{ github.server_url }}/${{ github.repository }}",
+          "buildOrder": "${{ github.run_number }}",
+          "buildName": "Build #${{ github.run_number }} (${{ github.ref_name }})",
+          "buildUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+          "reportUrl": "", # Can be filled if you have a stable URL for the Allure report in CI
+          "copy": ""
+        }
+        EOF
+
+        echo "Generated Allure environment and executor files:"
+        ls -l "${ALLURE_RESULTS_DIR}"
+        cat "${ALLURE_RESULTS_DIR}/environment.properties"
+        cat "${ALLURE_RESULTS_DIR}/executor.json"
+          
       - name: Download unit test results
         uses: actions/download-artifact@v4
         with:
@@ -261,17 +305,6 @@ jobs:
           else
             echo "No JSON files found in test_results/integration/allure-results"
           fi
-    
-      - name: Create Allure environment file
-        run: |
-          echo "Environment=GitHub Actions" > test_results/integration/allure-results/environment.properties
-          echo "Python_Version=3.11.2" >> test_results/integration/allure-results/environment.properties
-          echo "Pytest_Version=7.4.0" >> test_results/integration/allure-results/environment.properties
-          echo "Allure_Pytest_Version=2.14.3" >> test_results/integration/allure-results/environment.properties
-          echo "OS=Debian (gcc:latest)" >> test_results/integration/allure-results/environment.properties
-          echo "Tester=Ionut" >> test_results/integration/allure-results/environment.properties
-          echo "Repository=https://github.com/ionutandreiavram/Pytest_Gtest_Project" >> test_results/integration/allure-results/environment.properties
-          cat test_results/integration/allure-results/environment.properties
 
       - name: Debug Allure results
         run: |
@@ -300,32 +333,57 @@ jobs:
 
       - name: Generate Allure report for PyTest
         run: |
-          rm -rf allure-report-integration
-          chmod -R 777 test_results/integration/allure-results
-          allure generate test_results/integration/allure-results \
-            -o allure-report-integration --clean --verbose || \
+          ALLURE_RESULTS_DIR="test_results/integration/allure-results"
+          ALLURE_REPORT_DIR="allure-report-integration"
+          # Check if previous history exists and copy it into the current results directory
+          # Allure automatically looks for a 'history' folder inside the results directory passed to 'generate'
+          if [ -d "allure-history/allure-results" ]; then
+            echo "Copying history from previous run to current results directory."
+            cp -r allure-history/allure-results/history "${ALLURE_RESULTS_DIR}/" || echo "Failed to copy history"
+          else
+            echo "No previous Allure results found for history."
+          fi
+          rm -rf "${ALLURE_REPORT_DIR}" # Ensure clean report generation
+          chmod -R 777 "${ALLURE_RESULTS_DIR}" # Ensure correct permissions for Allure CLI
+          # Generate the report. Allure will automatically use the 'history' subdirectory if present.
+          allure generate "${ALLURE_RESULTS_DIR}" -o "${ALLURE_REPORT_DIR}" --clean --verbose || \
             echo "Allure generate failed"
-          chmod -R 755 allure-report-integration
+          chmod -R 755 "${ALLURE_REPORT_DIR}"
           echo "Generated report files count (expect ~20-30):"
-          find allure-report-integration -type f | wc -l
+          find "${ALLURE_REPORT_DIR}" -type f | wc -l
           echo "Generated report files:"
-          find allure-report-integration -type f
-          if [ -f allure-report-integration/index.html ]; then
+          find "${ALLURE_REPORT_DIR}" -type f
+          if [ -f "${ALLURE_REPORT_DIR}/index.html" ]; then
             echo "Report index.html exists"
           else
             echo "Report index.html not generated"
             exit 1
           fi
 
+      - name: Upload Allure results for history
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-history # This name must match the download name earlier
+          path: test_results/integration/allure-results/ # Path to the raw .json, .xml files
+          retention-days: 30 # How long to keep this artifact (determines trend depth)
+          
       - name: Prepare Allure reports for GitHub Pages
         continue-on-error: true
         run: |
           rm -rf allure-reports/integration
           mkdir -p allure-reports/unit allure-reports/integration
-          echo "Checking unit-test-results/allure-report-unit:"
-          ls -l unit-test-results/allure-report-unit || echo "allure-report-unit not found"
-          echo "Checking allure-report-integration:"
-          ls -l allure-report-integration || echo "allure-report-integration not found"
+          # Copy unit test report
+          if [ -d "unit-test-results/allure-report-unit" ]; then
+              cp -r unit-test-results/allure-report-unit/* allure-reports/unit/ || echo "Failed to copy allure-report-unit"
+          else
+              echo "unit-test-results/allure-report-unit not found, skipping copy."
+          fi
+          # Copy integration test report
+          if [ -d "allure-report-integration" ]; then
+              cp -r allure-report-integration/* allure-reports/integration/ || echo "Failed to copy allure-report-integration"
+          else
+              echo "allure-report-integration not found, skipping copy."
+          fi
           chmod -R 755 unit-test-results/allure-report-unit || echo "Failed to set permissions on allure-report-unit"
           chmod -R 755 allure-report-integration || echo "Failed to set permissions on allure-report-integration"
           cp -r unit-test-results/allure-report-unit/* allure-reports/unit/ || echo "Failed to copy allure-report-unit"
