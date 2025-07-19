@@ -193,11 +193,16 @@ jobs:
           ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
           chmod +x build/libcalculator.so build/libfibonacci.so || echo "Failed to set execute permissions"
           ls -l build/libcalculator.so build/libfibonacci.so
-
+          echo "Symbols in libcalculator.so:"
+          nm -D build/libcalculator.so | grep -E " add|subtract" || echo "No add/subtract symbols found"
+          echo "Symbols in libfibonacci.so:"
+          nm -D build/libfibonacci.so | grep fibonacci || echo "No fibonacci symbols found"
+      
       - name: Run integration tests
         run: |
           echo "Checking library files:"
           ls -l build/libcalculator.so build/libfibonacci.so || echo "Library files missing"
+          ldd build/libcalculator.so || echo "Failed to resolve libcalculator.so dependencies"
           ldd build/libfibonacci.so || echo "Failed to resolve libfibonacci.so dependencies"
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./build
           echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
@@ -220,7 +225,7 @@ jobs:
           else
             echo "No JSON files found in test_results/integration/allure-results"
           fi
-
+    
       - name: Create Allure environment file
         run: |
           echo "Environment=GitHub Actions" > test_results/integration/allure-results/environment.properties
