@@ -17,7 +17,7 @@ lib.fibonacci.restype = ctypes.c_uint64
 @allure.label("test_type", "integration")
 @pytest.mark.parametrize("n, expected", [
     (0, 0), # Test case 1 -  Fibonacci(0) = 0
-    (1, 1), # Test case 2 -  Fibonacci(1) = 1
+    (1, 0), # Test case 2 -  Fibonacci(1) = 0
     (2, 1), # Test case 3 -  Fibonacci(2) = 1
     (3, 2), # Test case 4 -  Fibonacci(3) = 2
     (4, 3), # Test case 5 -  Fibonacci(4) = 3
@@ -30,10 +30,18 @@ lib.fibonacci.restype = ctypes.c_uint64
     (20, 6765), # Test case 12 -  Fibonacci(20) = 6765
     (30, 832040), # Test case 13 -  Fibonacci(30) = 832040
     (50, 12586269025), # Test case 14 -  Fibonacci(50) = 12586269025
-    (60, 1548008755920) # Test case 15 -  Fibonacci(60) = 1548008755920
-
+    (60, 1548008755920), # Test case 15 -  Fibonacci(60) = 1548008755920
+    (93, 12200160415121876738), # Test case 16 - Fibonacci(93) = 12200160415121876738 
+    (-1, -1) # Test case 17 - Fibonacci(-1) = -1
 ])
 def test_fibonacci(n, expected):
+    """
+    Tests the C Fibonacci function with various valid inputs.
+
+    Args:
+        n (int): The input number for the Fibonacci calculation.
+        expected (int): The expected Fibonacci result for 'n'.
+    """
     with allure.step(f"Validate input n={n}"):
         allure.attach(f"Input parameter is {n}", name="Input Validation", attachment_type=allure.attachment_type.TEXT)
         assert n>=0, f"Input is {n} and should be positive"
