@@ -1,0 +1,3 @@
+Input: n=10
+Expected: 55
+Actual: 55
