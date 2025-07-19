@@ -6,10 +6,10 @@ import pytest
 lib_path = os.path.join(os.path.dirname(__file__), "../../build/libcalculator.so")
 lib = ctypes.CDLL(lib_path)
 
-lib.add.argtypes = [ctypes.c_int, ctypes.c_int]
-lib.add.restype = ctypes.c_int
-lib.subtract.argtypes = [ctypes.c_int, ctypes.c_int]
-lib.subtract.restype = ctypes.c_int
+lib.add_numbers.argtypes = [ctypes.c_double, ctypes.c_double]
+lib.add_numbers.restype = ctypes.c_double
+lib.sub_numbers.argtypes = [ctypes.c_double, ctypes.c_double]
+lib.sub_numbers.restype = ctypes.c_double
 
 @allure.feature("Calculator Integration Tests")
 @allure.story("Addition Calculation")
@@ -29,7 +29,7 @@ def test_add_numbers(a, b, expected):
                       name="Input Validation", 
                       attachment_type=allure.attachment_type.TEXT)
     with allure.step(f"Compute {a} + {b}"):
-        result = lib.add(a, b)
+        result = lib.add_numbers(a, b)
         allure.attach(f"Inputs: a={a}, b={b}\nExpected: {expected}\nActual: {result}", 
                       name="Test Data", 
                       attachment_type=allure.attachment_type.TEXT)
@@ -59,7 +59,7 @@ def test_sub_numbers(a, b, expected):
                       name="Input Validation", 
                       attachment_type=allure.attachment_type.TEXT)
     with allure.step(f"Compute {a} - {b}"):
-        result = lib.subtract(a, b)
+        result = lib.sub_numbers(a, b)
         allure.attach(f"Inputs: a={a}, b={b}\nExpected: {expected}\nActual: {result}", 
                       name="Test Data", 
                       attachment_type=allure.attachment_type.TEXT)
