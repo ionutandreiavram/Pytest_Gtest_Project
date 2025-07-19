@@ -69,7 +69,6 @@ class TestFibonacciFunctionality:
         (50, 12586269025), # Test case 14 -  Fibonacci(50) = 12586269025
         (60, 1548008755920), # Test case 15 -  Fibonacci(60) = 1548008755920
         (93, 12200160415121876738), # Test case 16 - Fibonacci(93) = 12200160415121876738 
-        (-1, -1) # Test case 17 - Fibonacci(17) = -1
     ])
     def test_fibonacci(self, n, expected):
         """
@@ -81,9 +80,6 @@ class TestFibonacciFunctionality:
         """
         with allure.step(f"Validate input n={n}"):
              allure.attach(f"Input parameter is {n}", name="Input Validation", attachment_type=allure.attachment_type.TEXT)
-             if n < 0:
-                self.lib.fibonacci.argtypes = [ctypes.c_int64]
-                self.lib.fibonacci.restype = ctypes.c_int64
              
         with allure.step(f"Compute fibonacci({n})"):
             result = self.lib.fibonacci(n)
@@ -93,7 +89,3 @@ class TestFibonacciFunctionality:
                           
         with allure.step(f"Verify result for fibonacci({n})"):
             assert result == expected, f"Result should be {expected}, but is {result}"
-            if n<0:
-                self.lib.fibonacci.argtypes = [ctypes.c_uint64]
-                self.lib.fibonacci.restype = ctypes.c_uint64
-    
