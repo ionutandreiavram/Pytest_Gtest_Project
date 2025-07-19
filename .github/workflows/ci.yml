@@ -202,40 +202,39 @@ jobs:
         continue-on-error: true # Important: Allows the workflow to continue if no history artifact is found (e.g., on the first run)
         
       - name: Generate Allure environment and executor info
-      run: |
-        ALLURE_RESULTS_DIR="test_results/integration/allure-results"
-        # environment.properties - provides general test environment details
-        echo "OS.Name=$(uname -s)" > "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "OS.Version=$(uname -r)" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "Python.Version=$(python3 -c 'import sys; print(sys.version.split()[0])')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "Pytest_Version=$(./venv/bin/pytest --version | head -n 1 | awk '{print $2}')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "Allure_Pytest_Version=$(./venv/bin/pip show allure-pytest | grep Version | awk '{print $2}')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "Allure_CLI_Version=$(allure --version | head -n 1)" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "Tester=${{ github.actor }}" >> "${ALLURE_RESULTS_DIR}/environment.properties" # Uses the GitHub username
-        echo "GitHub.RunId=${{ github.run_id }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "GitHub.RunNumber=${{ github.run_number }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "GitHub.Workflow=${{ github.workflow }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "GitHub.Ref=${{ github.ref }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "GitHub.SHA=${{ github.sha }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        echo "Repository=${{ github.server_url }}/${{ github.repository }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
-        # executor.json - provides details about the CI system/executor
-        cat <<EOF > "${ALLURE_RESULTS_DIR}/executor.json"
-        {
-          "name": "GitHub Actions",
-          "type": "github",
-          "url": "${{ github.server_url }}/${{ github.repository }}",
-          "buildOrder": "${{ github.run_number }}",
-          "buildName": "Build #${{ github.run_number }} (${{ github.ref_name }})",
-          "buildUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-          "reportUrl": "", # Can be filled if you have a stable URL for the Allure report in CI
-          "copy": ""
-        }
-        EOF
-
-        echo "Generated Allure environment and executor files:"
-        ls -l "${ALLURE_RESULTS_DIR}"
-        cat "${ALLURE_RESULTS_DIR}/environment.properties"
-        cat "${ALLURE_RESULTS_DIR}/executor.json"
+        run: |
+          ALLURE_RESULTS_DIR="test_results/integration/allure-results"
+          # environment.properties - provides general test environment details
+          echo "OS.Name=$(uname -s)" > "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "OS.Version=$(uname -r)" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "Python.Version=$(python3 -c 'import sys; print(sys.version.split()[0])')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "Pytest_Version=$(./venv/bin/pytest --version | head -n 1 | awk '{print $2}')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "Allure_Pytest_Version=$(./venv/bin/pip show allure-pytest | grep Version | awk '{print $2}')" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "Allure_CLI_Version=$(allure --version | head -n 1)" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "Tester=${{ github.actor }}" >> "${ALLURE_RESULTS_DIR}/environment.properties" # Uses the GitHub username
+          echo "GitHub.RunId=${{ github.run_id }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "GitHub.RunNumber=${{ github.run_number }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "GitHub.Workflow=${{ github.workflow }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "GitHub.Ref=${{ github.ref }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "GitHub.SHA=${{ github.sha }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          echo "Repository=${{ github.server_url }}/${{ github.repository }}" >> "${ALLURE_RESULTS_DIR}/environment.properties"
+          # executor.json - provides details about the CI system/executor
+          cat <<EOF > "${ALLURE_RESULTS_DIR}/executor.json"
+          {
+            "name": "GitHub Actions",
+            "type": "github",
+            "url": "${{ github.server_url }}/${{ github.repository }}",
+            "buildOrder": "${{ github.run_number }}",
+            "buildName": "Build #${{ github.run_number }} (${{ github.ref_name }})",
+            "buildUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "reportUrl": "", # Can be filled if you have a stable URL for the Allure report in CI
+            "copy": ""
+          }
+          EOF
+          echo "Generated Allure environment and executor files:"
+          ls -l "${ALLURE_RESULTS_DIR}"
+          cat "${ALLURE_RESULTS_DIR}/environment.properties"
+          cat "${ALLURE_RESULTS_DIR}/executor.json"
           
       - name: Download unit test results
         uses: actions/download-artifact@v4
