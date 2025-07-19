@@ -22,30 +22,30 @@ class TestFibonacciFunctionality:
     lib = None
 
     @classmethod
-    def setup_class(cls):
+    def setup_class(self):
         """
         Runs once before any test methods in this class.
         Used to load the shared library.
         """
         print("\n--- Setup (Class): Loading libfibonacci.so ---")
         try:
-            cls.lib = ctypes.CDLL(LIB_FIBONACCI_PATH)
-            cls.lib.fibonacci.argtypes = [ctypes.c_uint64]
-            cls.lib.fibonacci.restype = ctypes.c_uint64
+            self.lib = ctypes.CDLL(LIB_FIBONACCI_PATH)
+            self.lib.fibonacci.argtypes = [ctypes.c_uint64]
+            self.lib.fibonacci.restype = ctypes.c_uint64
         except OSError as e:
             pytest.exit(f"Failed to load shared library at {LIB_FIBONACCI_PATH}: {e}. "
                         "Ensure 'libfibonacci.so' is built and in the correct path.")
 
     @classmethod
-    def teardown_class(cls):
+    def teardown_class(self):
         """
         Runs once after all test methods in this class have completed.
         Used for any necessary cleanup.
         """
-        print("--- Teardown (Class): Cleanup for libfibonacci.so (if needed) ---")
+        print("\n --- Teardown (Class): Cleanup for libfibonacci.so ---")
         # For ctypes, explicit unloading is rarely necessary or directly supported.
         # For other resources like files or database connections, close them here.
-        cls.lib = None # Optionally clear the reference
+        self.lib = None # Optionally clear the reference
         
     @allure.story("Fibonacci Calculation")
     @allure.description("Tests the C Fibonacci function with various valid inputs.\n \
@@ -86,7 +86,7 @@ class TestFibonacciFunctionality:
                 self.lib.fibonacci.restype = ctypes.c_int64
              
         with allure.step(f"Compute fibonacci({n})"):
-            result = lib.fibonacci(n)
+            result = self.lib.fibonacci(n)
             allure.attach(f"Input: n={n}\nExpected: {expected}\nActual: {result}", 
                           name="Test Data", 
                           attachment_type=allure.attachment_type.TEXT)
