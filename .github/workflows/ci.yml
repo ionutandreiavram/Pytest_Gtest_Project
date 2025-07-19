@@ -183,8 +183,8 @@ jobs:
 
       - name: Clean integration test results
         run: |
-          rm -rf test_results/integration allure-results-unit \
-            allure-report-unit allure-report-integration \
+          rm -rf test_results/integration  \
+            allure-report-integration \
             allure-reports/integration
 
       - name: Create integration test results directory
