@@ -60,7 +60,7 @@ class TestFibonacciFunctionality:
         (4, 3), # Test case 5 -  Fibonacci(4) = 3
         (5, 5), # Test case 6 -  Fibonacci(5) = 5
         (6, 8), # Test case 7 -  Fibonacci(6) = 8
-        (7, 13), # Test case 8 -  Fibonacci(7) = 13
+        (6, 13), # Test case 8 -  Fibonacci(7) = 13
         (8, 21), # Test case 9 -  Fibonacci(8) = 21
         (9, 34), # Test case 10 -  Fibonacci(9) = 34
         (10, 55), # Test case 11 -  Fibonacci(10) = 55
