@@ -1,1 +1,0 @@
-[{"values":["GitHub Actions"],"name":"Environment"},{"values":["3.11.2"],"name":"Python_Version"},{"values":["7.4.0"],"name":"Pytest_Version"},{"values":["2.14.3"],"name":"Allure_Pytest_Version"},{"values":["Debian (gcc:latest)"],"name":"OS"},{"values":["Ionut"],"name":"Tester"},{"values":["https://github.com/ionutandreiavram/Pytest_Gtest_Project"],"name":"Repository"}]

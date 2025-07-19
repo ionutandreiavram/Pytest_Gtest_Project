@@ -1,2 +1,0 @@
-
---- Setup (Class): Loading libfibonacci.so ---

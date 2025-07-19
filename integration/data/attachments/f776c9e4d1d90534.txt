@@ -1,3 +1,0 @@
-Inputs: a=-2, b=3
-Expected: 1
-Actual: 1.0
