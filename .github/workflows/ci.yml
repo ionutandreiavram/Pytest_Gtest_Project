@@ -193,6 +193,28 @@ jobs:
           chmod -R 777 test_results/integration/allure-results
           ls -ld test_results/integration/allure-results
 
+      - name: Download unit test results
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results
+          path: unit-test-results/
+
+      - name: Debug downloaded unit test results
+        run: |
+          echo "Checking downloaded unit-test-results directory:"
+          ls -lR unit-test-results || echo "unit-test-results directory not found"
+          if [ -d unit-test-results/allure-report-unit ]; then
+            echo "Allure report unit files:"
+            ls -l unit-test-results/allure-report-unit
+            if [ -f unit-test-results/allure-report-unit/index.html ]; then
+              echo "Unit report index.html exists in unit-test-results/allure-report-unit"
+            else
+              echo "Unit report index.html not found in unit-test-results/allure-report-unit"
+            fi
+          else
+            echo "allure-report-unit directory not found in unit-test-results"
+          fi
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -300,11 +322,13 @@ jobs:
         run: |
           rm -rf allure-reports/integration
           mkdir -p allure-reports/unit allure-reports/integration
-          echo "Checking allure-report-unit:"
-          ls -l allure-report-unit || echo "allure-report-unit not found"
+          echo "Checking unit-test-results/allure-report-unit:"
+          ls -l unit-test-results/allure-report-unit || echo "allure-report-unit not found"
           echo "Checking allure-report-integration:"
           ls -l allure-report-integration || echo "allure-report-integration not found"
-          cp -r allure-report-unit/* allure-reports/unit/ || echo "Failed to copy allure-report-unit"
+          chmod -R 755 unit-test-results/allure-report-unit || echo "Failed to set permissions on allure-report-unit"
+          chmod -R 755 allure-report-integration || echo "Failed to set permissions on allure-report-integration"
+          cp -r unit-test-results/allure-report-unit/* allure-reports/unit/ || echo "Failed to copy allure-report-unit"
           cp -r allure-report-integration/* allure-reports/integration/ || echo "Failed to copy allure-report-integration"
           echo '<!DOCTYPE html>
           <html>
@@ -323,8 +347,15 @@ jobs:
             <p><a href="/Pytest_Gtest_Project/integration/">View Integration Test Reports</a></p>
           </body>
           </html>' > allure-reports/index.html
-          echo "Integration report files:"
-          ls -l allure-reports/integration
+          echo "Unit report files after copy:"
+          ls -lR allure-reports/unit || echo "No files in allure-reports/unit"
+          echo "Integration report files after copy:"
+          ls -l allure-reports/integration || echo "No files in allure-reports/integration"
+          if [ -f allure-reports/unit/index.html ]; then
+            echo "Unit index.html exists in allure-reports/unit"
+          else
+            echo "Unit index.html not found in allure-reports/unit"
+          fi
 
       - name: Deploy Allure reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
