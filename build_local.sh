@@ -38,6 +38,8 @@
      nm -D libcalculator.so | grep -E " add_numbers|subtract_numbers" || echo "No add_numbers/subtract_numbers symbols found"
      echo "Verifying symbols in libfibonacci.so..."
      nm -D libfibonacci.so | grep fibonacci || echo "No fibonacci symbols found"
+     echo "Verifying symbols in libconcatenate.so..."
+     nm -D libconcatenate.so | grep Concatenate || echo "No Concatenate symbols found"
      cd ..
 
      echo "Build completed successfully"
