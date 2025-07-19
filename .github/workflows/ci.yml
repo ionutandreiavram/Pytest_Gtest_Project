@@ -227,8 +227,7 @@ jobs:
             "buildOrder": "${{ github.run_number }}",
             "buildName": "Build #${{ github.run_number }} (${{ github.ref_name }})",
             "buildUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "reportUrl": "", # Can be filled if you have a stable URL for the Allure report in CI
-            "copy": ""
+            "reportUrl": "https://ionutandreiavram.github.io/Pytest_Gtest_Project"
           }
           EOF
           echo "Generated Allure environment and executor files:"
@@ -373,20 +372,18 @@ jobs:
           mkdir -p allure-reports/unit allure-reports/integration
           # Copy unit test report
           if [ -d "unit-test-results/allure-report-unit" ]; then
+              chmod -R 755 unit-test-results/allure-report-unit || echo "Failed to set permissions on allure-report-unit"
               cp -r unit-test-results/allure-report-unit/* allure-reports/unit/ || echo "Failed to copy allure-report-unit"
           else
               echo "unit-test-results/allure-report-unit not found, skipping copy."
           fi
           # Copy integration test report
           if [ -d "allure-report-integration" ]; then
+              chmod -R 755 allure-report-integration || echo "Failed to set permissions on allure-report-integration"
               cp -r allure-report-integration/* allure-reports/integration/ || echo "Failed to copy allure-report-integration"
           else
               echo "allure-report-integration not found, skipping copy."
           fi
-          chmod -R 755 unit-test-results/allure-report-unit || echo "Failed to set permissions on allure-report-unit"
-          chmod -R 755 allure-report-integration || echo "Failed to set permissions on allure-report-integration"
-          cp -r unit-test-results/allure-report-unit/* allure-reports/unit/ || echo "Failed to copy allure-report-unit"
-          cp -r allure-report-integration/* allure-reports/integration/ || echo "Failed to copy allure-report-integration"
           echo '<!DOCTYPE html>
           <html>
           <head>
